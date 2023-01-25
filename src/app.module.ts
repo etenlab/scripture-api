@@ -1,4 +1,9 @@
-import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
+import {
+  ApolloDriver,
+  ApolloDriverConfig,
+  ApolloFederationDriver,
+  ApolloFederationDriverConfig,
+} from '@nestjs/apollo';
 import { Module } from '@nestjs/common';
 import { GraphQLModule } from '@nestjs/graphql';
 import { HttpModule, HttpService } from '@nestjs/axios';
@@ -14,6 +19,7 @@ import { StrongsService } from './strongs/strongs.service';
 import { BookResolver } from './book/book.resolver';
 import { BookService } from './book/book.service';
 import { GraphService } from './graph/graph.service';
+import { ApolloServerPluginLandingPageLocalDefault } from 'apollo-server-core';
 
 @Module({
   imports: [
@@ -34,10 +40,13 @@ import { GraphService } from './graph/graph.service';
       inject: [ConfigService],
     }),
     TypeOrmModule.forFeature(entities),
-    GraphQLModule.forRoot<ApolloDriverConfig>({
-      driver: ApolloDriver,
+    GraphQLModule.forRoot<ApolloFederationDriverConfig>({
+      driver: ApolloFederationDriver,
+      debug: true,
+      playground: false,
       autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
       sortSchema: true,
+      plugins: [ApolloServerPluginLandingPageLocalDefault()],
     }),
     HttpModule,
     ScheduleModule.forRoot(),

@@ -40,7 +40,7 @@ export class BookService {
     return book;
   }
 
-  async getWordsInBook(bookId: string, limit: number, offset: number) {
+  async getWordsInBook(bookId: string) {
     const book = await this.graphService.getNode(NodeTypeName.BOOK, bookId);
 
     if (!book) {
@@ -70,7 +70,15 @@ export class BookService {
       uniqueSimplifiedWords.push(s);
     }
 
-    const sordedById = uniqueSimplifiedWords.sort((a, b) => {
+    return uniqueSimplifiedWords;
+  }
+
+  async resolveWords(
+    simplifiedWords: NodeSimplified[],
+    limit: number,
+    offset: number,
+  ): Promise<Word[]> {
+    const sordedById = simplifiedWords.sort((a, b) => {
       if (a.id < b.id) return -1;
       if (a.id > b.id) return 1;
       return 0;
