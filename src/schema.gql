@@ -1,0 +1,35 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+type Book {
+  id: String!
+  name: String!
+
+  """
+  Get words in book. Every call performs the full graph traversal (up to some depth), so using small pageSize values will not much improve the performance
+  """
+  words(
+    """Page number starting from 0"""
+    pageNumber: Int!
+
+    """Page size, must be > 0"""
+    pageSize: Int!
+  ): [Word!]!
+}
+
+type Query {
+  book(id: String!): Book!
+}
+
+type StrongsWord {
+  id: String!
+  strongsDef: String!
+  strongsId: String!
+}
+
+type Word {
+  id: String!
+  strongsWord: StrongsWord
+  text: String!
+}
