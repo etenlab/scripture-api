@@ -10,7 +10,4 @@ export class StrongsWord {
 
   @Field()
   strongsDef: string;
-
-  // @Field()
-  // kjvDef: string;
 }

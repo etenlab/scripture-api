@@ -64,7 +64,7 @@ export class BookResolver {
 
   @ResolveField('words', () => [Word], {
     description:
-      'Get words in book. Every call performs the full graph traversal (up to some depth), so using small pageSize values will not much improve the performance',
+      'Get words in book. Returns unique words by their text value and Strongs ID. Every call performs the full graph traversal (up to some depth), so using small pageSize values will not much improve the performance',
   })
   async getWords(
     @Parent() book: Partial<Book>,
