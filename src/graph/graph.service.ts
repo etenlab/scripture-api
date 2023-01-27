@@ -109,6 +109,18 @@ export class GraphService {
     });
   }
 
+  async findNodesByType(
+    type: NodeTypeName,
+    relations?: string[],
+  ): Promise<Node[]> {
+    return await this.nodeRepo.find({
+      where: {
+        typeName: type,
+      },
+      relations,
+    });
+  }
+
   makeNode(params: GraphNodeInput): GraphNode {
     const node = new Node();
 

@@ -20,6 +20,24 @@ export class BookService {
     private readonly strongsDictRepo: Repository<StrongsDictionary>,
   ) {}
 
+  async getAllBooks(): Promise<Omit<Book, 'words'>[]> {
+    const books = await this.graphService.findNodesByType(NodeTypeName.BOOK, [
+      'propertyKeys',
+      'propertyKeys.values',
+    ]);
+
+    return books
+      .map((b) => {
+        const simplified = this.graphService.simplifyNodeGraph(b);
+
+        return {
+          id: simplified.id,
+          name: simplified.props['id'],
+        };
+      })
+      .filter((b) => b.name != null);
+  }
+
   async getById(id: string) {
     const bookNode = await this.graphService.getNode(NodeTypeName.BOOK, id);
 
@@ -59,7 +77,9 @@ export class BookService {
 
     for (const wordNode of wordNodes) {
       const s = this.graphService.simplifyNodeGraph(wordNode);
-      const uniqueWordRef = `${s.props[WORD_TEXT_PROP_NAME]}/${s.props[WORD_STRONGS_REF_PROP_NAME]}`;
+      const uniqueWordRef = `${s.props[
+        WORD_TEXT_PROP_NAME
+      ].toLocaleLowerCase()}/${s.props[WORD_STRONGS_REF_PROP_NAME]}`;
 
       if (strongWordSet.has(uniqueWordRef)) {
         continue;
@@ -86,16 +106,23 @@ export class BookService {
 
     const sliced = sordedById.slice(offset, offset + limit);
 
-    const strongsDict = await this.strongsDictRepo.find({
-      where: {
-        strongsId: In(sliced.map((n) => n.props[WORD_STRONGS_REF_PROP_NAME])),
-      },
-    });
+    const relationsResolved =
+      await this.graphService.resolveRelationshipsFromNodes(
+        sliced.map((n) => n.id),
+        {
+          type: RelationshipTypeName.WORD_TO_STRONGS_ENTRY,
+          resolveFrom: false,
+          resolveTo: true,
+        },
+      );
+
+    const strongsMap = new Map<string, { node: Node; relId: string }>();
+
+    for (const rel of relationsResolved) {
+      strongsMap.set(rel.fromNode.id, { node: rel.toNode, relId: rel.id });
+    }
 
     const words: Word[] = [];
-    const strongsMap = new Map<string, StrongsDictionary>();
-
-    strongsDict.forEach((s) => strongsMap.set(s.strongsId, s));
 
     for (const w of sliced) {
       const word: Word = {
@@ -103,17 +130,21 @@ export class BookService {
         text: w.props.text,
       };
 
-      const sStrongs = strongsMap.get(w.props[WORD_STRONGS_REF_PROP_NAME]);
+      const strongs = strongsMap.get(w.id);
 
-      if (!sStrongs) {
+      if (!strongs) {
         words.push(word);
         continue;
       }
 
+      const sStrongs = this.graphService.simplifyNodeGraph(strongs.node);
+
+      word.strongsWordRelationId = strongs.relId;
+
       word.strongsWord = {
-        id: sStrongs.nodeId,
-        strongsDef: sStrongs.strongsDef,
-        strongsId: sStrongs.strongsId,
+        id: sStrongs.id,
+        strongsDef: sStrongs.props['strongs_def'],
+        strongsId: sStrongs.props['strongs_id'],
       };
 
       words.push(word);

@@ -22,6 +22,11 @@ export class BookResolver {
     return await this.bookService.getById(id);
   }
 
+  @Query(() => [Book], { name: 'books' })
+  async books() {
+    return await this.bookService.getAllBooks();
+  }
+
   @ResolveField('wordsCount', () => Int, {
     description: 'Get number of words in book',
   })

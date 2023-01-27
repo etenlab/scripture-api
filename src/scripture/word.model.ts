@@ -11,4 +11,7 @@ export class Word {
 
   @Field(() => StrongsWord, { nullable: true })
   strongsWord?: StrongsWord;
+
+  @Field(() => String, { nullable: true })
+  strongsWordRelationId?: string;
 }
