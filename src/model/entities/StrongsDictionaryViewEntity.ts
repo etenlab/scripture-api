@@ -1,7 +1,7 @@
 import { ViewColumn, ViewEntity } from 'typeorm';
 
 // materialized view
-@ViewEntity('strongs_dictionary', { synchronize: false })
+@ViewEntity('strongs_dictionary', { synchronize: false, schema: 'public' })
 export class StrongsDictionary {
   @ViewColumn({ name: 'node_id' })
   nodeId: string;
